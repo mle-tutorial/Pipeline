@@ -1,1 +1,6 @@
+pandas==1.5.3
+yfinance==0.2.4
+psycopg2-binary==2.9.5
+SQLAlchemy==1.4.44
+python-dotenv==0.21.0
 prefect==2.6.8
