@@ -8,4 +8,4 @@
 
 ## 실습
 
-- [Lab1](Lab1/README.md) : CLI로 deployment생성하기
+- [Lab2](Lab2/README.md) : CLI로 deployment생성하기
