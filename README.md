@@ -17,3 +17,9 @@
 
 - [Week6 슬라이드 자료](https://docs.google.com/presentation/d/15GUK2pxZF3qplmEg1yQEcr-mDFd6Fu7u-HeBIZmcx8A/edit#slide=id.g1c1aa30d9c5_0_56)
 - [Slack Notification](https://docs.google.com/presentation/d/1FjiKFiQPKtuHeesaJS36i5ENtdwSKDVjH-DgcCJvoPY/edit#slide=id.p)
+
+<br>
+
+# 참고자료
+[개발환경 세팅하기(windows)](https://docs.google.com/presentation/d/1SE6P9tg3AGanryelHhF7qJ2hgwrOXZm8Q46O_7nXD6U/edit?usp=sharing)  
+[개발환경 세팅하기(mac)](https://docs.google.com/presentation/d/1IbSSqU9mgfRvR511I_2zpWQVKgLyoiBhWu42mKWayWw/edit?usp=sharing)
