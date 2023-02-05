@@ -1,3 +1,4 @@
+import random
 from typing import List
 from datetime import date, timedelta
 
@@ -29,15 +30,22 @@ def transform(
         company["company_name"] = com_name
 
     df = pd.concat(df_list, axis=0)
-
     df = df.reset_index(drop=False)
-
     return df
+
+def flipCoin():
+    return random.choice([True,False])
 
 def load(df, table_name):
     engine = create_engine(Settings.POSTGRES_HOST)
 
-    df.to_sql(table_name, con=engine, if_exists="append", index=False)
+    if flipCoin():
+        df.to_sql(table_name, con=engine, if_exists="append", index=False)
+        print("Data Insert Success")
+    else:
+        raise Exception("Data Insert Failed")
+
+    return True
 
 def ETL():
     df_list = extract()
