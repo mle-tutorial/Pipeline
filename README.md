@@ -12,7 +12,7 @@
 - [Lab2](Lab2/README.md) : Prefect CLI로 deployment생성하기 Tutorial
 - [Lab3](Lab3/README.md) : Python으로 deployment생성하기
 - [Lab-Appendix](Lab-Appendix/README.md) : ConcurrentTaskFlow실습하기
-- Slack Notification 자료를 참고하여 
+- Slack Notification 자료를 참고하여 Notification 추가해보기
 ## Google Slide
 
 - [Week6 슬라이드 자료](https://docs.google.com/presentation/d/15GUK2pxZF3qplmEg1yQEcr-mDFd6Fu7u-HeBIZmcx8A/edit#slide=id.g1c1aa30d9c5_0_56)
