@@ -10,3 +10,5 @@
 
 - [Lab1](Lab1/README.md) : Database실습내용을 Crontab으로 자동화하기
 - [Lab2](Lab2/README.md) : Prefect CLI로 deployment생성하기 Tutorial
+- [Lab3](Lab3/README.md) : Python으로 deployment생성하기
+- [Lab-Appendix](Lab-Appendix/README.md) : ConcurrentTaskFlow실습하기
