@@ -2,7 +2,7 @@
 
 ## Deployment (CLI)
 
-- Lab1에서는 CLI를 통해 deployment yaml file을 생성하고 배포합니다.
+- Lab2에서는 CLI를 통해 deployment yaml file을 생성하고 배포합니다.
 
 - `prefect deployment build ./flow.py:ETL -n stock-pipeline -q queue1` 으로 yaml파일을 생성합니다.
 - 위 커맨드로 생성된 yaml파일의 parameters 부분을 수정합니다.
