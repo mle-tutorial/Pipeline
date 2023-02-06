@@ -1,42 +1,38 @@
 import random
-from typing import List
 from datetime import date, timedelta
 
-import pandas as pd
-import yfinance as yf
+from pykrx import stock
 from sqlalchemy import create_engine
 
 from settings import Settings
 
+
 def extract(
-        start_date:str = str(date.today() - timedelta(days=365 * 1)),
-        end_date:str = str(date.today()),
-        tech_list:List[str] = ["AAPL", "GOOG", "MSFT", "AMZN"],
-    ):
+    start_date: str = str(date.today() - timedelta(days=365 * 1)),
+    end_date: str = str(date.today()),
+    ticker: str = "005930",
+):
 
-    # yfinance 데이터 download
-    df_list = [
-        yf.download(tech, start = start_date, end = end_date)
-        for tech in tech_list
-    ]
-
-    return df_list
-
-def transform(
-        df_list,
-        company_list:List[str] = ["APPLE", "GOOGLE", "MICROSOFT", "AMAZON"]
-    ):
-    for company, com_name in zip(df_list, company_list):
-        company["company_name"] = com_name
-
-    df = pd.concat(df_list, axis=0)
-    df = df.reset_index(drop=False)
+    # Download Data
+    df = stock.get_market_ohlcv_by_date(start_date, end_date, ticker)
     return df
 
-def flipCoin():
-    return random.choice([True,False])
 
-def load(df, table_name):
+def transform(df, ticker: str = "005930"):
+
+    # Preprocessing Data
+    df["Ticker"] = ticker
+    df = df.reset_index()
+    df.columns = Settings.COLUMNS
+
+    return df
+
+
+def flipCoin():
+    return random.choice([True, False])
+
+
+def load(df, table_name: str = "stock"):
     engine = create_engine(Settings.POSTGRES_HOST)
 
     if flipCoin():
@@ -45,13 +41,12 @@ def load(df, table_name):
     else:
         raise Exception("Data Insert Failed")
 
-    return True
 
 def ETL():
     df_list = extract()
     df = transform(df_list)
-    load(df, "stock")
+    load(df)
+
 
 if __name__ == "__main__":
     ETL()
-    
