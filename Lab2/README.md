@@ -16,3 +16,7 @@ parameters: {
 - `prefect deployment ls`
 - `prefect deployment run ETL/stock-pipeline`
 - `prefect agent start -q 'queue1'`
+
+## Prefect Web
+
+- `prefect orion start` 명령어로 Prefect  Web UI를 확인할수 있도록 Prefect를 실행시킵니다.
