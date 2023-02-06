@@ -15,27 +15,30 @@ from sklearn.metrics import (
 from settings import Settings
 
 
-@task
+@task(name="create_engine")
 def create_db_engine(HOST_URL):
     engine = create_engine(HOST_URL)
     return engine
 
 
-@task
+@task(name="read_data")
 def read_data_from_database(query, engine):
     return pd.read_sql_query(query, con=engine)
 
 
-@task
-def preprocessing(train_df, valid_df, company):
+@task(name="preprocess_data")
+def preprocessing(train_df, valid_df, basedate):
     features = ["Open", "High", "Low", "Close", "Volume"]
     scaler = MinMaxScaler()
 
-    train_df = train_df[train_df["company_name"] == company].copy().reset_index()
-    valid_df = valid_df[valid_df["company_name"] == company].copy().reset_index()
+    df = pd.concat([train_df, valid_df], axis=0, ignore_index=True)
+    df["TomorrowClosePrice"] = df["Close"].shift(-1)
 
-    train_df["TomorrowClosePrice"] = train_df["Close"].shift(-1)
-    train_df.dropna(axis=0, inplace=True)
+    idx = int(df[df["Date"] == basedate].index[0])
+
+    train_df = df.iloc[: idx + 1].copy().reset_index()
+    valid_df = df.iloc[idx + 1 :].copy().reset_index()
+
     train_feature_df = train_df[features]
 
     train_X = scaler.fit_transform(train_feature_df)
@@ -49,7 +52,7 @@ def preprocessing(train_df, valid_df, company):
     return train_X, train_Y, valid_X, valid_Y
 
 
-@task
+@task(name="train_model")
 def train_model(train_X, train_Y):
     model = LinearRegression()
     model.fit(train_X, train_Y)
@@ -57,13 +60,13 @@ def train_model(train_X, train_Y):
     return model
 
 
-@task
-def create_prediction_info(model, valid_X, valid_Y):
+@task(name="make_score")
+def make_score(model, valid_X, valid_Y):
     pred = pd.Series(model.predict(valid_X))
     df = pd.concat([valid_Y, pred], axis=1, ignore_index=True)
     df.columns = ["TomorrowClosePrice", "PredictionResult"]
-    last_day_prediction = df["PredictionResult"].iloc[-1]
     df.dropna(inplace=True)
+
     msle = mean_squared_log_error(df["TomorrowClosePrice"], df["PredictionResult"])
     mae = mean_absolute_error(df["TomorrowClosePrice"], df["PredictionResult"])
     mse = mean_squared_error(df["TomorrowClosePrice"], df["PredictionResult"])
@@ -72,47 +75,42 @@ def create_prediction_info(model, valid_X, valid_Y):
         "msle": msle,
         "mae": mae,
         "mse": mse,
-        "last_day_prediction_result": last_day_prediction,
     }
 
     return info_dict
 
 
-@task
+@task(name="save_data")
 def save_data(*args):
     logger = get_run_logger()
     for arg in args:
         logger.info(arg)
 
 
-@flow
-def train_model_flow(train_df, valid_df, company_list, date):
-    for company in company_list:
-        train_X, train_Y, valid_X, valid_Y = preprocessing(train_df, valid_df, company)
-        model = train_model(train_X, train_Y)
-        info_dict = create_prediction_info(model, valid_X, valid_Y)
-        save_data(company, date, info_dict, train_X.shape, valid_X.shape)
-
-
-@flow
-def training_flow(date):
-    if date == "daily":
-        date = str((datetime.today() + timedelta(hours=9) - timedelta(days=30)).date())
+@flow(name="stock_data_train")
+def training_flow(basedate):
+    if basedate == "daily":  # 평일만 basedate로 사용하는 로직
+        basedate = (datetime.today() + timedelta(hours=9) - timedelta(days=30)).date()
+        while not basedate.weekday() < 5:
+            basedate -= timedelta(days=1)
+        basedate = str(basedate)
 
     HOST_URL = Settings.POSTGRES_HOST
     TABLE_NAME = "stock"
     TRAIN_QUERY = f"""
-        SELECT * FROM {TABLE_NAME} WHERE "Date" < '{date}'
+        SELECT * FROM {TABLE_NAME} WHERE "Date" < '{basedate}'
     """
     VALID_QUERY = f"""
-        SELECT * FROM {TABLE_NAME} WHERE "Date" >= '{date}' 
+        SELECT * FROM {TABLE_NAME} WHERE "Date" >= '{basedate}' 
     """
-    COMPANY_LIST = ["APPLE", "GOOGLE", "MICROSOFT", "AMAZON"]
 
     engine = create_db_engine(HOST_URL)
     train_df = read_data_from_database(TRAIN_QUERY, engine)
     valid_df = read_data_from_database(VALID_QUERY, engine)
-    train_model_flow(train_df, valid_df, COMPANY_LIST, date)
+    train_X, train_Y, valid_X, valid_Y = preprocessing(train_df, valid_df, basedate)
+    model = train_model(train_X, train_Y)
+    score_dict = make_score(model, valid_X, valid_Y)
+    save_data(basedate, score_dict)
 
 
 if __name__ == "__main__":
