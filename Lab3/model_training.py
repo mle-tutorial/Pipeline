@@ -88,7 +88,7 @@ def save_data(*args):
 
 
 @flow(name="stock_data_train")
-def training_flow(basedate):
+def training_flow(basedate:str="daily"):
     if basedate == "daily":  # 평일만 basedate로 사용하는 로직
         basedate = (datetime.today() + timedelta(hours=9) - timedelta(days=30)).date()
         while not basedate.weekday() < 5:
